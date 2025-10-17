@@ -8,7 +8,6 @@ venv/
 runs/
 logs/
 checkpoints/
-# models/
 *.pt
 *.pth
 
