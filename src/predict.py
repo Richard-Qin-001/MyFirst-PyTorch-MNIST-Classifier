@@ -9,7 +9,7 @@ from model import SimpleCNN, load_and_preprocess_image
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
 
-def batch_predict_external(model_class, device, root_path):
+def batch_predict(model_class, device, root_path):
     test_images_dir = os.path.join(root_path, 'test_images')
     json_path = os.path.join(test_images_dir, 'image-list.json')
     model_save_path = os.path.join(root_path, 'models', 'mnist_cnn_best.pth')
@@ -21,9 +21,9 @@ def batch_predict_external(model_class, device, root_path):
         print(f"错误：未找到文件 {json_path}。请确保文件已创建并位于 test_images 文件夹中。")
         return
 
- 
+    checkpoint = torch.load(model_save_path)
     loaded_model = model_class().to(device)
-    loaded_model.load_state_dict(torch.load(model_save_path))
+    loaded_model.load_state_dict(checkpoint['model_state_dict'])
     loaded_model.eval() # 设置评估模式
 
     total_images = len(test_list)
@@ -72,4 +72,4 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"当前使用的计算设备: {device}")
 
-    batch_predict_external(SimpleCNN, device, PROJECT_ROOT)
+    batch_predict(SimpleCNN, device, PROJECT_ROOT)

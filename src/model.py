@@ -66,10 +66,13 @@ class SimpleCNN(nn.Module):
         return x
     
 def load_and_preprocess_image(image_path, device):
+    def invert_colors(tensor):      
+        return 1.0 - tensor  # 颜色反转：将 0-1 的张量值反转
     img = Image.open(image_path).convert('L') 
     external_transform = transforms.Compose([
         transforms.Resize((28, 28)), # 确保图片尺寸是 28x28
         transforms.ToTensor(),
+        transforms.Lambda(invert_colors),
         transforms.Normalize((0.1307,), (0.3081,)) 
     ])
     tensor = external_transform(img).unsqueeze(0).to(device)

@@ -166,6 +166,29 @@ if __name__ == "__main__":
     # model.parameters()：告诉优化器需要更新哪些参数
     # lr=0.001：学习率 (Learning Rate)，控制每一步参数更新的幅度
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    
+    model_save_path = os.path.join(PROJECT_ROOT, 'models', 'mnist_cnn_best.pth')
+    start_epoch = 1
+
+    if os.path.exists(model_save_path):
+        checkpoint = torch.load(model_save_path)
+        model.load_state_dict(checkpoint['model_state_dict']) # 恢复模型权重
+        
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict']) # 恢复优化器状态
+
+        start_epoch = checkpoint['epoch'] + 1
+
+        best_accuracy = checkpoint['best_accuracy']
+        
+        print("-" * 30)
+        print(f"检测到已保存的模型！从第 {start_epoch} 周期继续训练，当前最佳准确率: {best_accuracy:.2f}%")
+        print("-" * 30)
+    else:
+        best_accuracy = 0.0
+        print("-" * 30)
+        print("未检测到模型文件，开始全新训练。")
+        print("-" * 30)
+
     # 超参数：训练周期 (Epochs)
     NUM_EPOCHS = 10
 
@@ -180,12 +203,17 @@ if __name__ == "__main__":
 
         if current_accuracy > best_accuracy:
             best_accuracy = current_accuracy
+            checkpoint = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'best_accuracy': best_accuracy
+            }
             model_save_path = os.path.join(PROJECT_ROOT, 'models', f'mnist_cnn_best.pth')
             os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
-            torch.save(model.state_dict(), model_save_path)
+            torch.save(checkpoint, model_save_path)
+            # torch.save(model.state_dict(), model_save_path)
             print(f"模型准确率提高到 {best_accuracy:.2f}%，已保存到 {model_save_path}")
 
     print("-" * 30)
     print(f"训练完成！最高测试准确率为: {best_accuracy:.2f}%")
-    # predict(model, device, test_dataset, image_index=42, criterion=criterion)
-    # batch_predict_external(SimpleCNN, device, PROJECT_ROOT)
