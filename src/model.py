@@ -68,11 +68,17 @@ class SimpleCNN(nn.Module):
 def load_and_preprocess_image(image_path, device):
     def invert_colors(tensor):      
         return 1.0 - tensor  # 颜色反转：将 0-1 的张量值反转
+    def binarize_image(tensor, threshold=0.5):
+        # 强制将像素值大于阈值（例如 0.5）的设为 1.0，否则设为 0.0
+        # PyTorch 的 where 函数：torch.where(condition, x, y)
+        # 如果条件满足，取 x，否则取 y
+        return torch.where(tensor > threshold, torch.tensor(1.0), torch.tensor(0.0))
     img = Image.open(image_path).convert('L') 
     external_transform = transforms.Compose([
         transforms.Resize((28, 28)), # 确保图片尺寸是 28x28
         transforms.ToTensor(),
         transforms.Lambda(invert_colors),
+        transforms.Lambda(binarize_image),
         transforms.Normalize((0.1307,), (0.3081,)) 
     ])
     tensor = external_transform(img).unsqueeze(0).to(device)

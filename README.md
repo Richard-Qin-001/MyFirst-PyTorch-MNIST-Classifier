@@ -6,4 +6,6 @@ Despite this initial achievement, the program still has some shortcomings that n
 
 I will try my best to gain a deeper understanding of Deep Learning and improve this model.
 
+To see how I deal with problems and some basic knowledge, please open [Problem-and-Solve.md](https://github.com/Richard-Qin-001/MyFirst-PyTorch-MNIST-Classifier/tree/main/note/Problem-and-Solve.md)
+
 Thank you for reading!
