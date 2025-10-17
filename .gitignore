@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+
+.env
+venv/
+*conda/
+
+runs/
+logs/
+checkpoints/
+models/
+*.pt
+*.pth
+
+.DS_Store
+Thumbs.db
