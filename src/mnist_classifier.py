@@ -4,8 +4,11 @@ import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 import os
+import json
+from PIL import Image
 
-# 目录设置
+from model import SimpleCNN
+
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
@@ -58,65 +61,7 @@ test_dataset = torchvision.datasets.MNIST(
 print(f"训练集图像数量: {len(train_dataset)}")
 print(f"测试集图像数量: {len(test_dataset)}")
 
-class SimpleCNN(nn.Module):
-    # 定义网络的结构，‘层’
-    def __init__(self, *args, **kwargs):
-        super(SimpleCNN, self).__init__(*args, **kwargs)
 
-        # 1. 卷积层 1 (用于提取基本特征)
-        # nn.Conv2d(in_channels, out_channels, kernel_size)
-        # MNIST 是灰度图，所以输入通道 in_channels=1
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=10, kernel_size=5)
-        
-        # 2. 卷积层 2 (用于提取更复杂的特征)
-        # 输入通道是上一层的 out_channels=10
-        self.conv2 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=5)
-        
-        # 3. Dropout 层 (防止在卷积层之间产生过拟合)
-        self.conv2_drop = nn.Dropout2d()  # 随机关闭一些神经元
-        
-        # 4. 全连接层 1 (将特征连接到 50 个神经元)
-        # 320 是根据卷积和池化操作计算出的特征数量
-        self.fc1 = nn.Linear(in_features=320, out_features=50) 
-        
-        # 5. 全连接层 2 (输出层)
-        # 输出是 10 个类别 (0, 1, ..., 9)
-        self.fc2 = nn.Linear(in_features=50, out_features=10)
-
-    # 定义数据 x 如何流过上面定义的层
-    def forward(self, x):
-        # x 的初始形状是：[BATCH_SIZE, 1, 28, 28]
-
-        # 1. 卷积层 1 (Conv1) -> ReLU -> Max Pooling 
-        # 输出形状：[BATCH_SIZE, 10, 12, 12]
-        x = self.conv1(x)         # 应用卷积层 1
-        x = F.relu(x)             # 应用 ReLU 激活函数
-        x = F.max_pool2d(x, 2)    # 应用 2x2 最大池化（尺寸减半）
-        
-        # 2. 卷积层 2 (Conv2) -> Dropout -> ReLU -> Max Pooling
-        # 输出形状：[BATCH_SIZE, 20, 4, 4]
-        x = self.conv2(x)         # 应用卷积层 2
-        x = self.conv2_drop(x)    # 应用 Dropout (仅在训练时有效)
-        x = F.relu(x)             # 应用 ReLU 激活函数
-        x = F.max_pool2d(x, 2)    # 应用 2x2 最大池化（尺寸减半）
-        
-        # 3. 展平 (Flatten)：从 [Batch, 20, 4, 4] 变为 [Batch, 320]
-        # x.size(0) 是获取当前的批量大小（例如 64）
-        x = x.view(x.size(0), -1) 
-        
-        # 4. 全连接层 1 (FC1) -> ReLU
-        # 输出形状：[BATCH_SIZE, 50]
-        x = self.fc1(x)
-        x = F.relu(x)
-        
-        # 5. Dropout (防止全连接层过拟合)
-        x = F.dropout(x, training=self.training)
-        
-        # 6. 全连接层 2 (FC2) - 输出层
-        # 最终输出形状：[BATCH_SIZE, 10]
-        x = self.fc2(x)
-        
-        return x
 
 def train(model, device, train_loader, optimizer, criterion, epoch):
     model.train()
@@ -181,7 +126,6 @@ def predict(model, device, test_dataset, image_index, criterion):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"当前使用的计算设备: {device}")
-    # 数据加载器DataLoader
     train_loader = torch.utils.data.DataLoader(
         train_dataset, # 要加载的数据集
         batch_size=BATCH_SIZE, # 每批次加载数量
@@ -200,8 +144,6 @@ if __name__ == "__main__":
     print(f"训练集的批次数量 (总图片数 / 批量大小): {len(train_loader)}")
     print(f"测试集的批次数量: {len(test_loader)}")
 
-    # --- 简单检查：打印一个批次的数据形状 ---
-    # next(iter(train_loader)) 用于从加载器中取出第一个批次的数据
     images, labels = next(iter(train_loader)) 
 
     # 形状：[批量大小, 通道数, 图像高度, 图像宽度]
@@ -209,9 +151,9 @@ if __name__ == "__main__":
     print(f"一个批次的图像张量形状: {images.shape}") 
     # 形状：[批量大小]，即 64 个标签
     print(f"一个批次的标签张量形状: {labels.shape}")
-    # --- 实例化模型并将其移动到 GPU ---
+    #实例化模型并将其移动到 GPU
     model = SimpleCNN()
-    model.to(device)  # 将模型的所有参数从 CPU 传输到 RTX 5060 GPU 显存！
+    model.to(device)  # 移动到显存
     print("-" * 30)
     print("模型已成功实例化并传输到:", device)
 
@@ -245,4 +187,5 @@ if __name__ == "__main__":
 
     print("-" * 30)
     print(f"训练完成！最高测试准确率为: {best_accuracy:.2f}%")
-    predict(model, device, test_dataset, image_index=42, criterion=criterion)
+    # predict(model, device, test_dataset, image_index=42, criterion=criterion)
+    # batch_predict_external(SimpleCNN, device, PROJECT_ROOT)

@@ -1,0 +1,42 @@
+[
+    {
+        "filename": "0.png", 
+        "label": 0
+    },
+    {
+        "filename": "1.png",
+        "label": 1
+    },
+    {
+        "filename": "2.png",
+        "label": 2
+    },
+    {
+        "filename": "3.png", 
+        "label": 3
+    },
+    {
+        "filename": "4.png", 
+        "label": 4
+    },
+    {
+        "filename": "5.png", 
+        "label": 5
+    },
+    {
+        "filename": "6.png", 
+        "label": 6
+    },
+    {
+        "filename": "7.png", 
+        "label": 7
+    },
+    {
+        "filename": "8.png", 
+        "label": 8
+    },
+    {
+        "filename": "9.png", 
+        "label": 9
+    }
+]
